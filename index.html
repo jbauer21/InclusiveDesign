@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inclusive Design class prototype for personal exercise calibration and joint tracking.">
+  <title>Inclusive Design · Exercise prototype</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header><div><h1>Exercise prototype</h1><p>Inclusive Design Project · shoulders, elbows &amp; knees</p></div><span class="tag">Class prototype</span></header>
+  <main id="main">
+    <p class="notice">Alerts compare camera estimates with your saved positions. This prototype is not clinically validated and cannot confirm whether a movement is safe.</p>
+    <nav aria-label="Prototype sections">
+      <button data-page="calibrate" aria-current="page">1. Calibrate</button>
+      <button data-page="exercises">2. Saved exercises <span id="exercise-count">0</span></button>
+      <button data-page="workout">3. Workout</button>
+    </nav>
+    <p id="message" role="status" aria-live="polite" hidden></p>
+    <div class="layout">
+      <section id="camera-panel" aria-labelledby="camera-heading">
+        <div class="row"><h2 id="camera-heading">Camera</h2><span id="camera-status" class="tag">Off</span></div>
+        <div class="camera-frame" id="camera-frame">
+          <video id="video" autoplay muted playsinline aria-label="Live camera preview"></video>
+          <canvas id="overlay" aria-label="Joint tracking overlay"></canvas>
+          <div id="camera-placeholder">Enable the camera to see your joint tracking.</div>
+          <div id="simulation-badge" hidden>SIMULATED INPUT · NO CAMERA</div>
+          <div id="countdown" aria-hidden="true" hidden></div>
+          <div id="live-reps" hidden>0 / 10 reps</div>
+        </div>
+        <p id="cue" role="status" aria-live="polite">Place the camera far enough away to show your head, hands, and feet.</p>
+        <p id="alert" role="alert" hidden>Potential Hyperextension Detected</p>
+        <p id="alert-joints" hidden></p>
+        <div class="row controls">
+          <button id="camera-start">Enable camera</button>
+          <button id="camera-stop" disabled>Turn camera off</button>
+          <label>Camera direction <select id="camera-facing"><option value="user">Front / webcam</option><option value="environment">Rear camera</option></select></label>
+        </div>
+        <div class="row controls">
+          <label class="check"><input type="checkbox" id="audio" checked> Spoken guidance &amp; alerts</label>
+          <label class="check"><input type="checkbox" id="mirror" checked> Mirror preview</label>
+        </div>
+        <details><summary>Camera-free test</summary><p>Use simulated poses to try the flow. Simulated exercises cannot be used with the real camera.</p><button id="demo-start">Use simulated input</button>
+          <div id="demo-controls" class="row" hidden><button data-pose="start">Start pose</button><button data-pose="end">End pose</button><button data-pose="past">Past limit</button><button data-pose="outside">Out of frame</button><button data-pose="lost">Tracking lost</button></div>
+        </details>
+      </section>
+      <div>
+        <section id="page-calibrate" aria-labelledby="calibrate-heading">
+          <h2 id="calibrate-heading">Save an exercise</h2>
+          <p>Name it and select the joints that move. After you begin, both pictures are hands-free.</p>
+          <form id="calibration-form">
+            <fieldset id="calibration-settings">
+              <label>Exercise name <input id="exercise-name" required maxlength="80" placeholder="e.g. Left arm extension" autocomplete="off"></label>
+              <fieldset><legend>Joints to monitor</legend><div id="joint-options" class="joint-options"></div><p class="hint">For lateral raises, select shoulders. Select elbows when the exercise bends or straightens your arms.</p></fieldset>
+              <label>Alert tolerance (degrees) <input id="tolerance" type="number" min="0" max="30" value="5" required></label>
+              <p class="hint">Small allowance beyond the saved angles to reduce jitter. This is a prototype setting, not a prescribed safe range.</p>
+            </fieldset>
+            <ol class="steps"><li>Get fully in frame and hold your start pose. A 5-second countdown takes the first picture.</li><li>Follow the spoken cue to move to your therapist-approved end pose. Hold it for the next countdown.</li><li>Return to the screen to review and save.</li></ol>
+            <p class="hint">Use the same camera angle each time, with the monitored bend visible. Select only joints that change at least 15° between the two poses. Do not increase your movement just to meet this prototype threshold.</p>
+            <div class="row"><button class="primary" id="calibrate-start" type="submit">Begin hands-free calibration</button><button id="calibrate-cancel" type="button" hidden>Cancel calibration</button></div>
+          </form>
+          <section id="review" hidden aria-labelledby="review-heading"><h3 id="review-heading">Review positions</h3><div id="capture-photos" class="photos"></div><p id="range-summary"></p><div class="row"><button class="primary" id="save-exercise">Save exercise</button><button id="retake">Retake both positions</button></div></section>
+        </section>
+        <section id="page-exercises" aria-labelledby="saved-heading" hidden><h2 id="saved-heading">Saved exercises</h2><p>Pictures and calibration stay in this browser on this device.</p><div id="exercise-list"></div><button id="add-exercise">Calibrate another exercise</button></section>
+        <section id="page-workout" aria-labelledby="workout-heading" hidden>
+          <h2 id="workout-heading">Build a workout</h2>
+          <form id="workout-form"><fieldset id="workout-settings"><label>Workout name <input id="workout-name" required maxlength="80" placeholder="e.g. Morning routine"></label><div class="row"><label>Exercise <select id="exercise-picker"></select></label><label>Target reps <input id="rep-target" type="number" min="1" max="200" value="10"></label><button id="add-to-workout" type="button">Add</button></div><ol id="workout-items"></ol></fieldset><button class="primary" id="save-workout" type="submit">Save workout</button></form>
+          <h3>Saved workouts</h3><div id="workout-list"></div>
+          <section id="session" hidden aria-labelledby="session-heading"><h3 id="session-heading">Workout</h3><p id="session-exercise"></p><p class="rep-total" id="session-reps">0 / 10 reps</p><p id="session-progress"></p><div id="session-references" class="photos"></div><div class="row"><button id="pause">Pause</button><button class="primary" id="next-exercise" disabled>Next exercise</button><button id="end-workout">End workout</button></div></section>
+          <section id="session-summary" hidden><h3>Session finished</h3><p id="session-summary-text"></p></section>
+        </section>
+      </div>
+    </div>
+    <footer>One person at a time. Keep camera placement and body orientation consistent. No workout video is recorded. Clearing this site's browser data removes saved exercises and workouts.</footer>
+  </main>
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>
